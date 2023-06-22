@@ -1,6 +1,5 @@
 import "./settings.css";
-import Sidebar from "../../components/sidebar/Sidebar";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context } from "../../context/Context";
 import axios from "axios";
 
@@ -12,7 +11,7 @@ export default function Settings() {
   const [success, setSuccess] = useState(false);
 
   const { user, dispatch } = useContext(Context);
-  const PF = "http://localhost:5000/images/"
+  const PF = "http://localhost:5000/images/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,6 +33,7 @@ export default function Settings() {
       } catch (err) { }
     }
     try {
+      console.log(updatedUser);
       const res = await axios.put("/users/" + user._id, updatedUser);
       setSuccess(true);
       dispatch({ type: "UPDATE_SUCCESS", payload: res.data });
@@ -41,18 +41,30 @@ export default function Settings() {
       dispatch({ type: "UPDATE_FAILURE" });
     }
   };
+
+  useEffect(() => {
+    setUsername(user.username);
+    setEmail(user.email);
+  }, [user.email, user.username]);
+
   return (
     <div className="settings">
       <div className="settingsWrapper">
         <div className="settingsTitle">
-          <span className="settingsUpdateTitle">Update Your Account</span>
+          <span className="settingsUpdateTitle">
+            Update Your Account
+          </span>
           <span className="settingsDeleteTitle">Delete Account</span>
         </div>
         <form className="settingsForm" onSubmit={handleSubmit}>
           <label>Profile Picture</label>
           <div className="settingsPP">
             <img
-              src={file ? URL.createObjectURL(file) : PF + user.profilePic}
+              src={
+                file
+                  ? URL.createObjectURL(file)
+                  : PF + user.profilePic
+              }
               alt=""
             />
             <label htmlFor="fileInput">
@@ -68,13 +80,13 @@ export default function Settings() {
           <label>Username</label>
           <input
             type="text"
-            placeholder={user.username}
+            value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
           <label>Email</label>
           <input
             type="email"
-            placeholder={user.email}
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <label>Password</label>
@@ -87,7 +99,11 @@ export default function Settings() {
           </button>
           {success && (
             <span
-              style={{ color: "green", textAlign: "center", marginTop: "20px" }}
+              style={{
+                color: "green",
+                textAlign: "center",
+                marginTop: "20px",
+              }}
             >
               Profile has been updated...
             </span>
